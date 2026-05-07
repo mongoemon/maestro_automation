@@ -1,0 +1,12 @@
+# Copy this file to .env and fill in real values.
+# .env is gitignored — never commit credentials.
+
+# ── Android ──────────────────────────────────────────────────────────────────
+ANDROID_APP_ID=com.saucelabs.mydemoapp.android
+
+# ── iOS ───────────────────────────────────────────────────────────────────────
+IOS_APP_ID=com.saucelabs.mydemo.app.ios
+
+# ── Test Account Credentials ──────────────────────────────────────────────────
+EMAIL=bod@example.com
+PASSWORD=10203040

@@ -1,0 +1,48 @@
+appId: com.saucelabs.mydemo.app.ios
+name: "TC-IOS-002: Products list is shown after login"
+tags:
+  - ios
+  - auth
+  - smoke
+env:
+  EMAIL: ${EMAIL}
+  PASSWORD: ${PASSWORD}
+onFlowStart:
+  - takeScreenshot: TC-IOS-002_start
+onFlowComplete:
+  - takeScreenshot: TC-IOS-002_complete
+---
+# TC-IOS-002: Products list is shown after login
+# Precondition: App is installed.
+# Expected: Product count > 0. At least one product title is visible.
+
+- launchApp:
+    clearState: true
+
+- waitForAnimationToEnd
+
+- runFlow:
+    file: ../subflows/navigate_to_login.yaml
+    env:
+      APP_ID: com.saucelabs.mydemo.app.ios
+
+- runFlow:
+    file: ../subflows/perform_login.yaml
+    env:
+      APP_ID: com.saucelabs.mydemo.app.ios
+      EMAIL: ${EMAIL}
+      PASSWORD: ${PASSWORD}
+
+# Assert: Products screen is visible
+- extendedWaitUntil:
+    visible:
+      text: "Products"
+    timeout: 10000
+
+# Assert: At least one product item is visible
+- assertVisible:
+    text: "Sauce Labs Backpack"
+    optional: true
+- assertVisible:
+    text: "Sauce Labs Bike Light"
+    optional: true

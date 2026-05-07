@@ -1,0 +1,36 @@
+appId: com.saucelabs.mydemoapp.android
+name: "TC-AND-003: Username field shows error when left empty"
+tags:
+  - android
+  - auth
+  - validation
+env:
+  PASSWORD: ${PASSWORD}
+onFlowStart:
+  - takeScreenshot: TC-AND-003_start
+onFlowComplete:
+  - takeScreenshot: TC-AND-003_complete
+---
+# TC-AND-003: Username field shows error when left empty
+# Precondition: App is installed. User is on the Login screen.
+# Test data: email=(empty), password=(empty) — just tap Login
+# Expected: "Username is required" error is displayed.
+
+- launchApp:
+    clearState: true
+
+- waitForAnimationToEnd
+
+- runFlow:
+    file: ../subflows/navigate_to_login.yaml
+    env:
+      APP_ID: com.saucelabs.mydemoapp.android
+
+# Leave both fields empty and tap Login directly
+- tapOn: "Login"
+
+# Assert: Username error message is displayed
+- extendedWaitUntil:
+    visible:
+      text: "Username is required"
+    timeout: 5000

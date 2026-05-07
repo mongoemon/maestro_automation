@@ -1,0 +1,21 @@
+appId: ${APP_ID}
+---
+# Open the hamburger drawer and navigate to the Login screen.
+# Run this after launchApp.
+
+# Dismiss any system dialog that may appear on launch
+- runFlow:
+    file: ./common_actions.yaml
+
+- waitForAnimationToEnd
+
+# Tap the hamburger icon (top-left corner of the top bar)
+- tapOn:
+    point: "7%, 8%"
+
+- waitForAnimationToEnd
+
+# Tap "Log In" in the navigation drawer
+- tapOn: "Log In"
+
+- waitForAnimationToEnd

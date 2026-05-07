@@ -1,0 +1,11 @@
+appId: ${APP_ID}
+---
+# Enter credentials and submit the login form.
+# Taps the EMAIL credential shortcut link (auto-populates both fields), then taps Login.
+# Requires EMAIL env var to match a link shown on the login screen (e.g. bod@example.com).
+
+- tapOn: ${EMAIL}
+
+- tapOn: "Login"
+
+- waitForAnimationToEnd

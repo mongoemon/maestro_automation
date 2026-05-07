@@ -1,0 +1,15 @@
+# Credentials — never commit
+.env
+
+# Maestro output
+reports/
+.maestro/logs/
+
+# App builds — never commit binary artifacts
+builds/android/*.apk
+builds/ios/*.app
+builds/ios/*.ipa
+
+# OS
+.DS_Store
+Thumbs.db

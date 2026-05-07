@@ -1,0 +1,48 @@
+appId: com.saucelabs.mydemoapp.android
+name: "TC-AND-002: Products list is shown after login"
+tags:
+  - android
+  - auth
+  - smoke
+env:
+  EMAIL: ${EMAIL}
+  PASSWORD: ${PASSWORD}
+onFlowStart:
+  - takeScreenshot: TC-AND-002_start
+onFlowComplete:
+  - takeScreenshot: TC-AND-002_complete
+---
+# TC-AND-002: Products list is shown after login
+# Precondition: App is installed.
+# Expected: Product count > 0. At least one product title is visible.
+
+- launchApp:
+    clearState: true
+
+- waitForAnimationToEnd
+
+- runFlow:
+    file: ../subflows/navigate_to_login.yaml
+    env:
+      APP_ID: com.saucelabs.mydemoapp.android
+
+- runFlow:
+    file: ../subflows/perform_login.yaml
+    env:
+      APP_ID: com.saucelabs.mydemoapp.android
+      EMAIL: ${EMAIL}
+      PASSWORD: ${PASSWORD}
+
+# Assert: Products screen is visible
+- extendedWaitUntil:
+    visible:
+      text: "Products"
+    timeout: 10000
+
+# Assert: At least one product item is visible
+- assertVisible:
+    text: "Sauce Labs Backpack"
+    optional: true
+- assertVisible:
+    text: "Sauce Labs Bike Light"
+    optional: true

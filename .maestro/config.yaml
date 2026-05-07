@@ -1,0 +1,8 @@
+# Maestro workspace configuration
+# Docs: https://maestro.mobile.dev/
+
+flows:
+  - ../flows/**/*.yaml
+
+# Screenshot output directory
+screenshotDir: ../reports/screenshots

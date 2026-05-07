@@ -1,0 +1,75 @@
+appId: com.saucelabs.mydemo.app.ios
+name: "TC-IOS-005: Logout returns Login option to menu"
+tags:
+  - ios
+  - auth
+  - smoke
+env:
+  EMAIL: ${EMAIL}
+  PASSWORD: ${PASSWORD}
+onFlowStart:
+  - takeScreenshot: TC-IOS-005_start
+onFlowComplete:
+  - takeScreenshot: TC-IOS-005_complete
+---
+# TC-IOS-005: Logout returns Login option to menu
+# Precondition: App is installed. User starts fresh.
+# Expected: After logout, "Log In" is visible in the navigation drawer.
+
+- launchApp:
+    clearState: true
+
+- waitForAnimationToEnd
+
+# Log in with valid credentials
+- runFlow:
+    file: ../subflows/navigate_to_login.yaml
+    env:
+      APP_ID: com.saucelabs.mydemo.app.ios
+
+- runFlow:
+    file: ../subflows/perform_login.yaml
+    env:
+      APP_ID: com.saucelabs.mydemo.app.ios
+      EMAIL: ${EMAIL}
+      PASSWORD: ${PASSWORD}
+
+# Assert: Products screen is displayed after login
+- extendedWaitUntil:
+    visible:
+      text: "Products"
+    timeout: 10000
+
+- takeScreenshot: TC-IOS-005_after_login
+
+# Open hamburger menu
+- tapOn:
+    point: "7%, 8%"
+
+- waitForAnimationToEnd
+
+# Tap "Log Out" in the navigation drawer
+- tapOn: "Log Out"
+
+- waitForAnimationToEnd
+
+- takeScreenshot: TC-IOS-005_logout_dialog
+
+# Confirm logout in the dialog
+- tapOn: "LOGOUT"
+
+- waitForAnimationToEnd
+
+- takeScreenshot: TC-IOS-005_after_logout
+
+# Open hamburger menu again to verify logout state
+- tapOn:
+    point: "7%, 8%"
+
+- waitForAnimationToEnd
+
+# Assert: "Log In" is visible in the drawer (confirms user is logged out)
+- extendedWaitUntil:
+    visible:
+      text: "Log In"
+    timeout: 5000
