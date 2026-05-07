@@ -1,0 +1,14 @@
+# Source to use when resolving download URLs.
+# "saucelabs" → saucelabs_url   (public demo builds, no token needed)
+# "private"   → private_url     (your team's private GitHub release, requires GITHUB_TOKEN)
+source: saucelabs
+
+android:
+  filename: mda-2.2.0-25.apk
+  saucelabs_url: https://github.com/saucelabs/my-demo-app-android/releases/download/2.2.0/mda-2.2.0-25.apk
+  private_url: https://github.com/your-org/your-repo/releases/download/v1.0.0/your-app.apk
+
+ios:
+  filename: SauceLabs-Demo-App.ipa
+  saucelabs_url: https://github.com/saucelabs/my-demo-app-ios/releases/download/1.0.0/SauceLabs-Demo-App.ipa
+  private_url: https://github.com/your-org/your-repo/releases/download/v1.0.0/your-app.ipa

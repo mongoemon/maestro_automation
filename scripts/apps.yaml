@@ -1,0 +1,35 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# App Binary Download Configuration
+#
+# HOW TO SWITCH SOURCES:
+#   Change `source` to "saucelabs" or "private" and run:
+#       python scripts/download_apps.py
+#
+# PRIVATE HOSTING SETUP (GitHub Releases — recommended):
+#   1. Create a release in your GitHub repo (can be private).
+#   2. Upload the APK/IPA as release assets.
+#   3. Fill in private_url below with the release asset URL:
+#          https://github.com/YOUR_ORG/YOUR_REPO/releases/download/TAG/FILENAME
+#   4. For private repos, set the env var before running the script:
+#          Windows:  $env:GITHUB_TOKEN = "ghp_xxxxxxxxxxxx"
+#          Mac/CI:   export GITHUB_TOKEN="ghp_xxxxxxxxxxxx"
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Active source: "saucelabs" | "private"
+source: saucelabs
+
+android:
+  filename: mda-2.2.0-25.apk
+  # Official SauceLabs release — verify the tag at:
+  # https://github.com/saucelabs/my-demo-app-android/releases
+  saucelabs_url: "https://github.com/saucelabs/my-demo-app-android/releases/download/2.2.0/mda-2.2.0-25.apk"
+  # Your private GitHub Release URL (fill in when using private hosting)
+  private_url: ""
+
+ios:
+  filename: SauceLabs-Demo-App.Simulator.zip
+  # Official SauceLabs release — verify the tag at:
+  # https://github.com/saucelabs/my-demo-app-ios/releases
+  saucelabs_url: "https://github.com/saucelabs/my-demo-app-ios/releases/download/2.2.2/SauceLabs-Demo-App.Simulator.zip"
+  # Your private GitHub Release URL (fill in when using private hosting)
+  private_url: ""

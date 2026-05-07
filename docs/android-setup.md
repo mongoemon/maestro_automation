@@ -111,11 +111,60 @@ adb devices
 
 ---
 
-## 6. Install Your APK
+## 6. Get the APK
+
+### Option A — Download automatically (recommended)
+
+The script `scripts/download_apps.py` downloads the APK defined in `scripts/apps.yaml`.
+
+**First-time setup:**
 
 ```powershell
-# From the project root — -r allows reinstalling over an existing version
-adb install -r builds\android\mda-2.2.0-25.apk
+# 1. Install the only dependency
+pip install pyyaml
+
+# 2. Copy the example config and fill in URLs
+Copy-Item scripts\apps.yaml.example scripts\apps.yaml
+# Edit scripts\apps.yaml — set source, filename, and the matching *_url
+```
+
+**Download:**
+
+```powershell
+# Both platforms
+python scripts/download_apps.py
+
+# Android only
+python scripts/download_apps.py --android
+
+# Force re-download even if file already exists
+python scripts/download_apps.py --android --force
+```
+
+For private GitHub releases, set your token first:
+
+```powershell
+$env:GITHUB_TOKEN = "ghp_xxxxxxxxxxxx"
+python scripts/download_apps.py --android
+```
+
+The APK lands at `app/android/<filename>` (gitignored).
+
+### Option B — Manual copy
+
+Place the APK directly into `app/android/`:
+
+```powershell
+Copy-Item C:\path\to\your.apk app\android\your.apk
+```
+
+---
+
+## 7. Install the APK
+
+```powershell
+# -r allows reinstalling over an existing version
+adb install -r app\android\mda-2.2.0-25.apk
 # Success
 ```
 

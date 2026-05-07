@@ -5,10 +5,19 @@
 reports/
 .maestro/logs/
 
+# Debug screenshots captured in root during exploratory runs
+/*.png
+
 # App builds — never commit binary artifacts
 builds/android/*.apk
 builds/ios/*.app
 builds/ios/*.ipa
+app/android/*.apk
+app/ios/*.app
+app/ios/*.ipa
+
+# Claude Code local settings (personal overrides)
+.claude/settings.local.json
 
 # OS
 .DS_Store

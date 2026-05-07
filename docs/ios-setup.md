@@ -48,26 +48,42 @@ open -a Simulator
 
 ### Get the build
 
-From Xcode:
+**Option A — Download automatically (recommended):**
+
+```bash
+# 1. Install the only dependency
+pip install pyyaml
+
+# 2. Copy the example config and fill in URLs (one-time setup)
+cp scripts/apps.yaml.example scripts/apps.yaml
+# Edit scripts/apps.yaml — set source, filename, and saucelabs_url / private_url
+
+# 3. Download
+python scripts/download_apps.py --ios
+```
+
+The `.app` lands at `app/ios/<filename>` (gitignored).
+
+For private GitHub releases, set your token first:
+
+```bash
+export GITHUB_TOKEN="ghp_xxxxxxxxxxxx"
+python scripts/download_apps.py --ios
+```
+
+**Option B — Build from Xcode:**
 1. Select an **iPhone Simulator** as the run destination (top toolbar)
 2. Press **⌘B** to build (no need to run)
-3. Find the `.app` in:
+3. Find the `.app` at:
    ```
    ~/Library/Developer/Xcode/DerivedData/<AppName>/Build/Products/Debug-iphonesimulator/<AppName>.app
    ```
-
-Or ask your iOS developer for a simulator build.
-
-### Copy it to the project
-
-```bash
-cp -r /path/to/YourApp.app builds/ios/YourApp.app
-```
+   Then copy: `cp -r /path/to/YourApp.app app/ios/YourApp.app`
 
 ### Install to simulator
 
 ```bash
-xcrun simctl install booted builds/ios/YourApp.app
+xcrun simctl install booted app/ios/YourApp.app
 ```
 
 ---
@@ -76,10 +92,17 @@ xcrun simctl install booted builds/ios/YourApp.app
 
 ### Get the build
 
-From Xcode:
+**Option A — Download automatically (recommended):**
+
+```bash
+python scripts/download_apps.py --ios
+# IPA lands at app/ios/<filename>
+```
+
+**Option B — Export from Xcode:**
 1. **Product → Archive**
 2. In the Organizer: **Distribute App → Ad Hoc** (or Development)
-3. Export and copy the `.ipa` to `builds/ios/YourApp.ipa`
+3. Export and copy the `.ipa` to `app/ios/YourApp.ipa`
 
 Or get it from your CI pipeline / TestFlight export.
 
@@ -90,7 +113,7 @@ Or get it from your CI pipeline / TestFlight export.
 npm install -g ios-deploy
 
 # Connect iPhone via USB, then:
-ios-deploy --bundle builds/ios/YourApp.ipa
+ios-deploy --bundle app/ios/YourApp.ipa
 ```
 
 ---
