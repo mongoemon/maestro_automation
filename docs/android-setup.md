@@ -243,12 +243,32 @@ Assert that "Products" is visible... COMPLETED
 ## 10. Run All Android Tests
 
 ```powershell
-maestro test flows/android `
-    --env "ANDROID_EMAIL=bod@example.com" `
-    --env "PASSWORD=10203040"
+maestro test flows/android --env "ANDROID_EMAIL=bod@example.com" --env "PASSWORD=10203040"
 ```
 
 Expected: `5/5 Flows Passed`
+
+---
+
+## 11. Generate an HTML Test Report
+
+Maestro can output JUnit XML which you then convert to HTML.
+
+**Install once:**
+```powershell
+pip install -r requirements.txt
+```
+
+**Run tests with XML output:**
+```powershell
+maestro test flows/android --env "ANDROID_EMAIL=bod@example.com" --env "PASSWORD=10203040" --format junit --output results.xml
+```
+
+**Convert to HTML and open:**
+```powershell
+junit2html results.xml report.html
+Start-Process report.html
+```
 
 ---
 

@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuites>
+  <testsuite name="Test Suite" device="emulator-5554" tests="5" failures="0" time="201.0">
+    <testcase id="TC-AND-001: Login with valid credentials" name="TC-AND-001: Login with valid credentials" classname="TC-AND-001: Login with valid credentials" time="39.0" status="SUCCESS">
+      <properties>
+        <property name="tags" value="android, auth, smoke"/>
+      </properties>
+    </testcase>
+    <testcase id="TC-AND-002: Products list is shown after login" name="TC-AND-002: Products list is shown after login" classname="TC-AND-002: Products list is shown after login" time="54.0" status="SUCCESS">
+      <properties>
+        <property name="tags" value="android, auth, smoke"/>
+      </properties>
+    </testcase>
+    <testcase id="TC-AND-003: Username field shows error when left empty" name="TC-AND-003: Username field shows error when left empty" classname="TC-AND-003: Username field shows error when left empty" time="25.0" status="SUCCESS">
+      <properties>
+        <property name="tags" value="android, auth, validation"/>
+      </properties>
+    </testcase>
+    <testcase id="TC-AND-004: Password field shows error when left empty" name="TC-AND-004: Password field shows error when left empty" classname="TC-AND-004: Password field shows error when left empty" time="32.0" status="SUCCESS">
+      <properties>
+        <property name="tags" value="android, auth, validation"/>
+      </properties>
+    </testcase>
+    <testcase id="TC-AND-005: Logout returns Login option to menu" name="TC-AND-005: Logout returns Login option to menu" classname="TC-AND-005: Logout returns Login option to menu" time="51.0" status="SUCCESS">
+      <properties>
+        <property name="tags" value="android, auth, smoke"/>
+      </properties>
+    </testcase>
+  </testsuite>
+</testsuites>
