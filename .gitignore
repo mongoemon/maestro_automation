@@ -4,6 +4,8 @@
 # Maestro output
 reports/
 .maestro/logs/
+results.xml
+report.html
 
 # Debug screenshots captured in root during exploratory runs
 /*.png
