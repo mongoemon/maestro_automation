@@ -8,5 +8,7 @@ ANDROID_APP_ID=com.saucelabs.mydemoapp.android
 IOS_APP_ID=com.saucelabs.mydemo.app.ios
 
 # ── Test Account Credentials ──────────────────────────────────────────────────
-EMAIL=bod@example.com
+# Android and iOS use different test accounts (different credential shortcuts in each app)
+IOS_EMAIL=bob@example.com
+ANDROID_EMAIL=bod@example.com
 PASSWORD=10203040

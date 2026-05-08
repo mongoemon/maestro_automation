@@ -5,7 +5,7 @@ tags:
   - auth
   - smoke
 env:
-  EMAIL: ${EMAIL}
+  EMAIL: ${IOS_EMAIL}
   PASSWORD: ${PASSWORD}
 onFlowStart:
   - takeScreenshot: TC-IOS-005_start
@@ -23,33 +23,34 @@ onFlowComplete:
 
 # Log in with valid credentials
 - runFlow:
-    file: ../subflows/navigate_to_login.yaml
+    file: ./subflows/navigate_to_login.yaml
     env:
       APP_ID: com.saucelabs.mydemo.app.ios
 
 - runFlow:
-    file: ../subflows/perform_login.yaml
+    file: ./subflows/perform_login.yaml
     env:
       APP_ID: com.saucelabs.mydemo.app.ios
-      EMAIL: ${EMAIL}
+      EMAIL: ${IOS_EMAIL}
       PASSWORD: ${PASSWORD}
 
-# Assert: Products screen is displayed after login
+# Assert: Products catalog is displayed after login
 - extendedWaitUntil:
     visible:
-      text: "Products"
-    timeout: 10000
+      text: "Sauce Labs Backpack"
+    timeout: 20000
 
 - takeScreenshot: TC-IOS-005_after_login
 
-# Open hamburger menu
+# Open More tab to access Log Out
 - tapOn:
-    point: "7%, 8%"
+    id: "More-tab-item"
 
 - waitForAnimationToEnd
 
-# Tap "Log Out" in the navigation drawer
-- tapOn: "Log Out"
+# Tap "Log Out" — uses same accessibility id as Login button, text changes based on auth state
+- tapOn:
+    id: "LogOut-menu-item"
 
 - waitForAnimationToEnd
 
@@ -62,14 +63,14 @@ onFlowComplete:
 
 - takeScreenshot: TC-IOS-005_after_logout
 
-# Open hamburger menu again to verify logout state
+# Open More tab again to verify logout state
 - tapOn:
-    point: "7%, 8%"
+    id: "More-tab-item"
 
 - waitForAnimationToEnd
 
-# Assert: "Log In" is visible in the drawer (confirms user is logged out)
+# Assert: Login Button is visible again (confirms user is logged out)
 - extendedWaitUntil:
     visible:
-      text: "Log In"
+      id: "Login Button"
     timeout: 5000

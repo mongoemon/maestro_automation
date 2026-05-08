@@ -1,0 +1,21 @@
+appId: ${APP_ID}
+---
+# Tap the credential shortcut to fill the username field without opening the keyboard.
+# The shortcut fills username only — it does NOT auto-login.
+# With no keyboard open, tapping the password field is reliable.
+
+- tapOn: "${EMAIL}"
+
+- waitForAnimationToEnd
+
+- tapOn:
+    point: "50%, 53%"
+
+- inputText: ${PASSWORD}
+
+# "Login" text appears twice: page title (index 0) and submit button (index 1)
+- tapOn:
+    text: "Login"
+    index: 1
+
+- waitForAnimationToEnd

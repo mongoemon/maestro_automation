@@ -5,7 +5,7 @@ tags:
   - auth
   - smoke
 env:
-  EMAIL: ${EMAIL}
+  EMAIL: ${ANDROID_EMAIL}
   PASSWORD: ${PASSWORD}
 onFlowStart:
   - takeScreenshot: TC-AND-002_start
@@ -30,19 +30,15 @@ onFlowComplete:
     file: ../subflows/perform_login.yaml
     env:
       APP_ID: com.saucelabs.mydemoapp.android
-      EMAIL: ${EMAIL}
+      EMAIL: ${ANDROID_EMAIL}
       PASSWORD: ${PASSWORD}
 
-# Assert: Products screen is visible
+# Assert: Products catalog is loaded with at least one item
 - extendedWaitUntil:
     visible:
-      text: "Products"
-    timeout: 10000
+      text: "Sauce Labs Backpack"
+    timeout: 20000
 
-# Assert: At least one product item is visible
-- assertVisible:
-    text: "Sauce Labs Backpack"
-    optional: true
 - assertVisible:
     text: "Sauce Labs Bike Light"
     optional: true

@@ -262,7 +262,8 @@ Define in `.env`, declare in flow `env:` section, use in steps:
 
 ```env
 # .env
-EMAIL=bod@example.com
+ANDROID_EMAIL=bod@example.com
+IOS_EMAIL=bob@example.com
 PASSWORD=10203040
 ```
 
@@ -276,7 +277,8 @@ env:
 
 Pass on the command line when running directly:
 ```powershell
-maestro test flows/android/TC-AND-001.yaml --env "EMAIL=bod@example.com" --env "PASSWORD=10203040"
+maestro test flows/android/TC-AND-001.yaml --env "ANDROID_EMAIL=bod@example.com
+IOS_EMAIL=bob@example.com" --env "PASSWORD=10203040"
 ```
 
 ---

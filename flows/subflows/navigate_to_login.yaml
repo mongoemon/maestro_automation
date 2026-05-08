@@ -19,3 +19,10 @@ appId: ${APP_ID}
 - tapOn: "Log In"
 
 - waitForAnimationToEnd
+
+# Dismiss Android App Compatibility dialog if it appears on the login screen
+- tapOn:
+    text: "OK"
+    optional: true
+
+- waitForAnimationToEnd

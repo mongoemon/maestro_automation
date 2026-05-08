@@ -202,7 +202,7 @@ $env:PATH = "$env:PATH;$env:USERPROFILE\maestro\bin"
 
 # Run TC-AND-001
 maestro test flows/android/TC-AND-001_login_valid.yaml `
-    --env "EMAIL=bod@example.com" `
+    --env "ANDROID_EMAIL=bod@example.com" `
     --env "PASSWORD=10203040"
 ```
 
@@ -220,7 +220,7 @@ Assert that "Products" is visible... COMPLETED
 
 ```powershell
 maestro test flows/android `
-    --env "EMAIL=bod@example.com" `
+    --env "ANDROID_EMAIL=bod@example.com" `
     --env "PASSWORD=10203040"
 ```
 

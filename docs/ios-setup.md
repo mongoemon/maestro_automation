@@ -33,7 +33,7 @@ xcrun simctl list devices available
 Boot a simulator (pick one from the list above):
 
 ```bash
-xcrun simctl boot "iPhone 15 Pro"
+xcrun simctl boot "iPhone 16 Pro"
 ```
 
 Open the Simulator app to see it:
@@ -62,7 +62,14 @@ cp scripts/apps.yaml.example scripts/apps.yaml
 python scripts/download_apps.py --ios
 ```
 
-The `.app` lands at `app/ios/<filename>` (gitignored).
+The file lands at `app/ios/<filename>` (gitignored).
+
+For the SauceLabs simulator build, a `.zip` is downloaded — extract it before installing:
+
+```bash
+unzip app/ios/SauceLabs-Demo-App.Simulator.zip -d app/ios/
+# App bundle lands at: app/ios/Payload/My Demo App.app
+```
 
 For private GitHub releases, set your token first:
 
@@ -139,9 +146,15 @@ You need this for `APP_ID` in your `.env` file.
 
 ```bash
 # Make sure simulator is booted and app is installed
-./scripts/run_flow.ps1 -Flow flows/auth/login.yaml
-# Or directly:
-maestro test flows/auth/login.yaml
+
+# Using the helper script (reads credentials from .env automatically)
+pwsh scripts/run_flow.ps1 -Flow flows/ios/TC-IOS-001_login_valid.yaml -Platform ios
+# (reads IOS_EMAIL and PASSWORD from .env automatically)
+
+# Or run directly with maestro:
+maestro test flows/ios/TC-IOS-001_login_valid.yaml \
+    --env IOS_EMAIL=bob@example.com \
+    --env PASSWORD=10203040
 ```
 
 ---
@@ -161,7 +174,7 @@ Use this when a test leaves the app in a dirty state.
 
 | Error | Fix |
 |-------|-----|
-| `Unable to find a booted simulator` | Run `xcrun simctl boot "iPhone 15 Pro"` |
+| `Unable to find a booted simulator` | Run `xcrun simctl boot "iPhone 16"` |
 | App not found / wrong bundle ID | Verify with `PlistBuddy` command above |
 | `Untrusted Developer` on real device | Settings → General → VPN & Device Management → Trust |
 | Tests flaky on simulator | Add `waitForAnimationToEnd` after transitions; increase `timeout` values |

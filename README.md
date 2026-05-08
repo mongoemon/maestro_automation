@@ -11,13 +11,14 @@ Step-by-step guide for beginners to set up and run mobile UI tests using [Maestr
 3. [Install Maestro CLI](#3-install-maestro-cli)
 4. [Project Structure](#4-project-structure)
 5. [First-Time Setup](#5-first-time-setup)
-6. [Where to Put Your App Build](#6-where-to-put-your-app-build)
+6. [Get the App Builds](#6-get-the-app-builds)
 7. [Connect a Device or Emulator](#7-connect-a-device-or-emulator)
-8. [Run Your First Test](#8-run-your-first-test)
-9. [Run Test Suites](#9-run-test-suites)
-10. [Read the Results](#10-read-the-results)
-11. [Write Your Own Flow](#11-write-your-own-flow)
-12. [Troubleshooting](#12-troubleshooting)
+8. [Run Tests — Android](#8-run-tests--android)
+9. [Run Tests — iOS](#9-run-tests--ios)
+10. [Run Test Suites](#10-run-test-suites)
+11. [Read the Results](#11-read-the-results)
+12. [Write Your Own Flow](#12-write-your-own-flow)
+13. [Troubleshooting](#13-troubleshooting)
 
 ---
 
@@ -50,13 +51,14 @@ Install these before anything else.
 | **Java 11+** | Maestro runs on the JVM | https://adoptium.net |
 | **Android Studio** | Android emulator + `adb` tool | https://developer.android.com/studio |
 | **Xcode 14+** | iOS simulator *(Mac only)* | Mac App Store |
+| **Python 3 + pyyaml** | Download app builds | `pip install pyyaml` |
 | **Git** | Clone / version control | https://git-scm.com |
 
 > **Windows users:** iOS testing requires a Mac. You can run Android tests on Windows.
 
 Verify Java is installed:
 
-```powershell
+```bash
 java -version
 # Should print: openjdk version "11.x.x" or higher
 ```
@@ -79,10 +81,8 @@ maestro --version
 
 ### Windows
 
-The automatic installer may require a proxy or manual steps. If `iwr ... | iex` fails, install manually:
-
 1. Download the latest release zip from: https://github.com/mobile-dev-inc/maestro/releases  
-   (look for `maestro_win.zip` or the assets named `maestro-*`)
+   (look for the asset named `maestro_win.zip`)
 2. Extract to `C:\Users\<YourName>\maestro\`
 3. Add to your PATH permanently:
 
@@ -100,8 +100,7 @@ The automatic installer may require a proxy or manual steps. If `iwr ... | iex` 
 maestro --version
 ```
 
-> **Tip (this session):** Maestro was installed at `C:\Users\nekoe\maestro\bin\maestro.bat`.  
-> If `maestro` is not recognized, add it to PATH for the current session:
+> **Tip:** If `maestro` is not recognized in the current session, add it temporarily:
 > ```powershell
 > $env:PATH = "$env:PATH;$env:USERPROFILE\maestro\bin"
 > ```
@@ -113,8 +112,8 @@ maestro --version
 ```
 maestro_automation/
 │
-├── builds/                     ← Put your app builds here
-│   ├── android/                ←   Android APK files
+├── app/                        ← App binaries (gitignored)
+│   ├── android/                ←   Android APK
 │   └── ios/                    ←   iOS .app (simulator) or .ipa (device)
 │
 ├── flows/                      ← All test flows (YAML)
@@ -124,9 +123,16 @@ maestro_automation/
 │   │   ├── TC-AND-003_login_error_empty_username.yaml
 │   │   ├── TC-AND-004_login_error_empty_password.yaml
 │   │   └── TC-AND-005_logout.yaml
-│   ├── ios/                    ←   iOS-specific flows (same test cases)
-│   │   └── TC-IOS-001 ... TC-IOS-005
-│   └── subflows/               ←   Reusable helper flows
+│   ├── ios/                    ←   iOS-specific flows
+│   │   ├── TC-IOS-001_login_valid.yaml
+│   │   ├── TC-IOS-002_products_after_login.yaml
+│   │   ├── TC-IOS-003_login_error_empty_username.yaml
+│   │   ├── TC-IOS-004_login_error_empty_password.yaml
+│   │   ├── TC-IOS-005_logout.yaml
+│   │   └── subflows/           ←   iOS-specific helpers
+│   │       ├── navigate_to_login.yaml
+│   │       └── perform_login.yaml
+│   └── subflows/               ←   Shared helpers (used by Android)
 │       ├── navigate_to_login.yaml
 │       ├── perform_login.yaml
 │       └── common_actions.yaml
@@ -134,9 +140,14 @@ maestro_automation/
 ├── scripts/                    ← PowerShell helper scripts
 │   ├── run_all.ps1             ← Run every flow for a platform
 │   ├── run_suite.ps1           ← Run a named suite (smoke, auth, etc.)
-│   └── run_flow.ps1            ← Run one specific flow
+│   ├── run_flow.ps1            ← Run one specific flow
+│   ├── download_apps.py        ← Download app binaries
+│   └── apps.yaml               ← Build download config (copy from apps.yaml.example)
 │
-├── reports/                    ← Test results (auto-generated)
+├── reports/                    ← JUnit XML reports (auto-generated with -Report flag)
+│
+├── docs/
+│   └── ios-setup.md            ← Detailed iOS setup guide
 │
 ├── .env                        ← Your credentials (DO NOT commit)
 └── .env.example                ← Template — copy this to .env
@@ -148,90 +159,65 @@ maestro_automation/
 
 **Step 1 — Copy the environment template**
 
-```powershell
+```bash
+# macOS / Linux
+cp .env.example .env
+
+# Windows (PowerShell)
 Copy-Item .env.example .env
 ```
 
-**Step 2 — Edit `.env` with your app details**
-
-Open `.env` in any text editor:
+**Step 2 — Edit `.env` with your credentials**
 
 ```env
 ANDROID_APP_ID=com.saucelabs.mydemoapp.android
 IOS_APP_ID=com.saucelabs.mydemo.app.ios
-EMAIL=bod@example.com
+IOS_EMAIL=bob@example.com
+ANDROID_EMAIL=bod@example.com
 PASSWORD=10203040
 ```
 
-> **Note:** The `APP_ID` values in `.env` are used by the run scripts only.  
-> Each flow file hardcodes its own `appId:` — Maestro does not substitute env vars in the `appId:` header.
+> The demo app uses different test accounts per platform:
+> - **Android:** `bod@example.com` — tap the shortcut to auto-fill both username and password
+> - **iOS:** `bob@example.com` — tap the shortcut to fill username, then type password manually
 
-> Find your app IDs:
-> - **Android APK:** `aapt dump badging your.apk | grep package`
-> - **iOS IPA:** Unzip the IPA and read `Payload/YourApp.app/Info.plist`
-
----
-
-## 6. Where to Put Your App Build
-
-Place your compiled app files in the `builds/` folder before running tests.
-
-### Android (APK)
-
-```
-builds/
-└── android/
-    └── mda-2.2.0-25.apk       ← your APK here
-```
-
-Get your APK from:
-- Android Studio: **Build → Build Bundle(s)/APK(s) → Build APK(s)**
-- CI output: download the artifact from your pipeline
-- From a developer: ask for a debug or staging APK
-
-Install it to your device/emulator:
-
-```powershell
-adb install -r builds\android\mda-2.2.0-25.apk
-# -r flag allows reinstalling over an existing version
-```
-
-> You only need to install once per build. Re-install when the app is updated.
+> **Note:** `appId:` in flow files cannot use env vars — it is always hardcoded.
 
 ---
 
-### iOS — Simulator (`.app`)
+## 6. Get the App Builds
 
-```
-builds/
-└── ios/
-    └── YourApp.app         ← .app bundle here (it's a folder, not a file)
-```
+App binaries are **not committed** to git. Download them with the provided script.
 
-Install it to the running simulator:
+**Step 1 — Copy and configure `apps.yaml`**
 
 ```bash
-xcrun simctl install booted builds/ios/YourApp.app
+cp scripts/apps.yaml.example scripts/apps.yaml
 ```
 
----
+The default config uses the official SauceLabs demo app releases. No edits needed to get started.
 
-### iOS — Real Device (`.ipa`)
-
-```
-builds/
-└── ios/
-    └── SauceLabs-Demo-App.ipa   ← your IPA here
-```
-
-Install it to a connected device:
+**Step 2 — Download**
 
 ```bash
-# Using ios-deploy (install once: npm install -g ios-deploy)
-ios-deploy --bundle builds/ios/SauceLabs-Demo-App.ipa
+# Download both platforms
+python scripts/download_apps.py
+
+# Or download one at a time
+python scripts/download_apps.py --android
+python scripts/download_apps.py --ios
 ```
 
-> **Tip:** For daily automation, simulator builds are much faster to install and reset.
+Files land at `app/android/<filename>` and `app/ios/<filename>`.
+
+**iOS simulator build — extra step:**
+
+The iOS download is a `.zip`. Extract it before installing:
+
+```bash
+unzip app/ios/SauceLabs-Demo-App.Simulator.zip -d app/ios/
+# App bundle lands at: app/ios/Payload/My Demo App.app
+```
 
 ---
 
@@ -239,116 +225,206 @@ ios-deploy --bundle builds/ios/SauceLabs-Demo-App.ipa
 
 ### Android Emulator
 
-1. Open **Android Studio**
-2. Go to **Device Manager** (toolbar icon)
-3. Click **Create Device** if you don't have one — **Pixel 7, API 36** recommended
-4. Press the **▶ Play** button to start it
+1. Open **Android Studio → Device Manager**
+2. Create a device if needed (**Pixel 7, API 33+** recommended)
+3. Press **▶ Play** to start it
 
 Verify it's connected:
 
-```powershell
+```bash
 adb devices
-# Should show: emulator-5554   device
+# emulator-5554   device
+```
+
+Install the APK:
+
+```bash
+adb install -r app/android/mda-2.2.0-25.apk
 ```
 
 ### Android Physical Device
 
-1. Enable **Developer Options** on your phone:
-   - Settings → About Phone → tap **Build Number** 7 times
+1. Enable **Developer Options**: Settings → About Phone → tap **Build Number** 7 times
 2. Enable **USB Debugging** in Developer Options
-3. Connect via USB cable
-4. Accept the "Allow USB Debugging" dialog on your phone
+3. Connect via USB and accept the "Allow USB Debugging" dialog
 
-```powershell
+```bash
 adb devices
-# Should show: ABC123XYZ   device
+# ABC123XYZ   device
+
+adb install -r app/android/mda-2.2.0-25.apk
 ```
 
 ### iOS Simulator *(Mac only)*
 
 ```bash
+# List available simulators
 xcrun simctl list devices available
-xcrun simctl boot "iPhone 15 Pro"
+
+# Boot one
+xcrun simctl boot "iPhone 16 Pro"
+
+# Open the Simulator app
 open -a Simulator
+
+# Install the app (after extracting the zip — see §6)
+xcrun simctl install booted "app/ios/Payload/My Demo App.app"
 ```
 
-### iOS Physical Device *(Mac only)*
-
-1. Connect your iPhone via USB and trust the computer
-2. In Xcode: **Window → Devices and Simulators** to confirm it appears
+See [docs/ios-setup.md](docs/ios-setup.md) for the full iOS setup guide.
 
 ---
 
-## 8. Run Your First Test
+## 8. Run Tests — Android
 
-Make sure your device/emulator is running and the app is installed, then:
+Make sure the emulator is running and the APK is installed, then:
 
-```powershell
-# Add Maestro to PATH if needed
-$env:PATH = "$env:PATH;$env:USERPROFILE\maestro\bin"
+```bash
+# Run a single flow
+maestro test flows/android/TC-AND-001_login_valid.yaml \
+    --env ANDROID_EMAIL=bod@example.com \
+    --env PASSWORD=10203040
 
-# Run a single flow (pass credentials as --env)
-maestro test flows/android/TC-AND-001_login_valid.yaml `
-    --env "EMAIL=bod@example.com" `
-    --env "PASSWORD=10203040"
+# Run all Android flows
+maestro test flows/android/ \
+    --env ANDROID_EMAIL=bod@example.com \
+    --env PASSWORD=10203040
 ```
 
-You will see Maestro take control of the device and execute each step. Green = passed, red = failed with a screenshot saved to `C:\Users\<name>\.maestro\tests\<timestamp>\`.
-
-**Or use the helper script (reads from `.env` automatically):**
+**Using the helper script (reads from `.env` automatically):**
 
 ```powershell
-.\scripts\run_flow.ps1 -Flow flows/android/TC-AND-001_login_valid.yaml
+# Single flow
+.\scripts\run_flow.ps1 -Flow flows/android/TC-AND-001_login_valid.yaml -Platform android
+
+# All Android flows
+.\scripts\run_all.ps1 -Platform android
+
+# With JUnit report
+.\scripts\run_all.ps1 -Platform android -Report
+```
+
+**Expected output — all passing:**
+
+```
+[Passed] TC-AND-001: Login with valid credentials (35s)
+[Passed] TC-AND-002: Products list is shown after login (51s)
+[Passed] TC-AND-003: Username field shows error when left empty (28s)
+[Passed] TC-AND-004: Password field shows error when left empty (32s)
+[Passed] TC-AND-005: Logout returns Login option to menu (42s)
 ```
 
 ---
 
-## 9. Run Test Suites
+## 9. Run Tests — iOS
 
-Run all flows for a platform:
+Make sure the simulator is booted and the app is installed, then:
 
-```powershell
-# All Android tests
-maestro test flows/android `
-    --env "EMAIL=bod@example.com" `
-    --env "PASSWORD=10203040"
+```bash
+# Run a single flow
+maestro test flows/ios/TC-IOS-001_login_valid.yaml \
+    --env IOS_EMAIL=bob@example.com \
+    --env PASSWORD=10203040
 
-# All iOS tests (Mac only)
-maestro test flows/ios `
-    --env "EMAIL=bod@example.com" `
-    --env "PASSWORD=10203040"
+# Run all iOS flows
+maestro test flows/ios/ \
+    --env IOS_EMAIL=bob@example.com \
+    --env PASSWORD=10203040
 ```
 
-Run by tag using the helper script:
+**Using the helper script:**
+
+```powershell
+# Single flow
+.\scripts\run_flow.ps1 -Flow flows/ios/TC-IOS-001_login_valid.yaml -Platform ios
+
+# All iOS flows
+.\scripts\run_all.ps1 -Platform ios
+
+# With JUnit report
+.\scripts\run_all.ps1 -Platform ios -Report
+```
+
+**Expected output — all passing:**
+
+```
+[Passed] TC-IOS-001: Login with valid credentials
+[Passed] TC-IOS-002: Products list is shown after login
+[Passed] TC-IOS-003: Username field shows error when left empty
+[Passed] TC-IOS-004: Password field shows error when left empty
+[Passed] TC-IOS-005: Logout returns Login option to menu
+```
+
+---
+
+## 10. Run Test Suites
+
+Filter by tag using the helper script:
 
 ```powershell
 # Smoke tests (fast, critical paths only)
 .\scripts\run_suite.ps1 -Suite smoke -Platform android
+.\scripts\run_suite.ps1 -Suite smoke -Platform ios
 
 # Auth flows only
 .\scripts\run_suite.ps1 -Suite auth -Platform android
 
-# Full regression
-.\scripts\run_all.ps1 -Platform android
+# Validation flows only
+.\scripts\run_suite.ps1 -Suite validation -Platform android
+
+# Full regression (all tags)
+.\scripts\run_suite.ps1 -Suite regression -Platform android
 ```
+
+Available tags:
+
+| Tag | Flows included |
+|-----|---------------|
+| `smoke` | TC-001, TC-002, TC-005 |
+| `auth` | TC-001, TC-002, TC-003, TC-004, TC-005 |
+| `validation` | TC-003, TC-004 |
+| `regression` | All flows |
 
 ---
 
-## 10. Read the Results
+## 11. Read the Results
 
-**In the terminal:** Each step prints COMPLETED, WARNED (optional element not found), or FAILED.
+**In the terminal:** Each step prints `COMPLETED`, `WARNED` (optional element not found), or `FAILED`.
 
-**Debug artifacts:** On failure, Maestro saves screenshots and logs to:
+**Debug artifacts on failure:** Maestro saves screenshots and logs to:
+
 ```
+# macOS / Linux
+~/.maestro/tests/<timestamp>/
+
+# Windows
 C:\Users\<name>\.maestro\tests\<timestamp>\
 ```
+
 The failure screenshot (named with ❌) shows exactly what was on screen when the test failed.
 
-**Named screenshots:** Use `takeScreenshot: name` in flows to capture key states. These appear inline in the terminal output path.
+**JUnit XML report** (generated with `-Report` flag or `--format junit`):
+
+```
+reports/
+└── report-android.xml
+└── report-ios.xml
+```
+
+Import this into CI systems (GitHub Actions, Jenkins, etc.) or open in any JUnit viewer.
+
+**Named screenshots** (defined in flows with `takeScreenshot:`):
+
+Each flow captures `start` and `complete` screenshots. They are saved in the directory where you ran `maestro`, e.g.:
+
+```
+TC-AND-001_start.png
+TC-AND-001_complete.png
+```
 
 ---
 
-## 11. Write Your Own Flow
+## 12. Write Your Own Flow
 
 Create a new YAML file in `flows/android/` or `flows/ios/`.
 
@@ -361,7 +437,7 @@ tags:
   - android
   - smoke
 env:
-  EMAIL: ${EMAIL}
+  ANDROID_EMAIL: ${ANDROID_EMAIL}
   PASSWORD: ${PASSWORD}
 onFlowStart:
   - takeScreenshot: TC-XXX_start
@@ -390,20 +466,18 @@ onFlowComplete:
 
 | Command | What it does |
 |---------|-------------|
-| `launchApp` | Open the app |
 | `launchApp: clearState: true` | Restart the app with fresh state |
 | `tapOn: "Text"` | Tap by visible text |
 | `tapOn: id: "resource_id"` | Tap by resource/accessibility ID *(most reliable)* |
 | `tapOn: point: "50%, 34%"` | Tap by screen percentage coordinates |
+| `tapOn: text: "X" index: 1` | Tap the second element matching text X |
+| `tapOn: text: "X" optional: true` | Tap only if element exists, skip otherwise |
 | `inputText: "hello"` | Type text into focused field |
 | `eraseText: 100` | Erase up to 100 characters from focused field |
-| `hideKeyboard` | Dismiss the on-screen keyboard |
 | `extendedWaitUntil: visible: text: "..." timeout: N` | Wait up to N ms for element |
-| `assertVisible: "Text"` | Fail immediately if element is not on screen |
-| `assertNotVisible: "Text"` | Fail if element is visible |
+| `assertVisible: text: "X"` | Fail immediately if element is not on screen |
+| `assertVisible: text: "X" optional: true` | Warn but don't fail if not found |
 | `scroll` | Scroll down |
-| `swipe: direction: LEFT` | Swipe left |
-| `back` | Press back button (Android) |
 | `waitForAnimationToEnd` | Wait for transitions to finish |
 | `takeScreenshot: name` | Save a named screenshot |
 | `runFlow: file: ../other.yaml` | Execute another flow as a step |
@@ -412,129 +486,111 @@ onFlowComplete:
 
 ```yaml
 env:
-  EMAIL: ${EMAIL}        # declares that this flow needs the EMAIL variable
+  ANDROID_EMAIL: ${ANDROID_EMAIL}   # declare variables the flow needs
 ---
-- inputText: ${EMAIL}    # use it in steps like this
+- tapOn: ${ANDROID_EMAIL}           # use in steps
 ```
 
-**Important: `appId:` does NOT support env vars.** Always hardcode the app ID:
+**Finding element IDs:**
 
-```yaml
-# WRONG — Maestro will not substitute this
-appId: ${ANDROID_APP_ID}
+```bash
+# Android — dump UI hierarchy
+adb shell uiautomator dump /sdcard/ui.xml
+adb pull /sdcard/ui.xml
 
-# CORRECT
-appId: com.saucelabs.mydemoapp.android
-```
-
-**Use `extendedWaitUntil` instead of `assertVisible` with timeout:**
-
-```yaml
-# WRONG — timeout is not supported on assertVisible
-- assertVisible:
-    text: "Products"
-    timeout: 5000
-
-# CORRECT
-- extendedWaitUntil:
-    visible:
-      text: "Products"
-    timeout: 5000
-```
-
-**Use `eraseText: N` instead of `clearText`:**
-
-```yaml
-# WRONG — clearText was removed in Maestro 2.x
-- clearText
-
-# CORRECT
-- eraseText: 100
-```
-
-**Finding element IDs (resource IDs):**
-
-Use `adb` to dump the UI hierarchy and find stable IDs:
-
-```powershell
-adb shell uiautomator dump /sdcard/ui_dump.xml
-adb pull /sdcard/ui_dump.xml ui_dump.xml
-# Open ui_dump.xml and search for resource-id attributes
-```
-
-Or use Maestro Studio for a live interactive view:
-
-```powershell
+# Or use Maestro Studio for a live interactive inspector
 maestro studio
 ```
 
 ---
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 **`maestro: command not found`**  
-→ Maestro is not on PATH. Run: `$env:PATH = "$env:PATH;$env:USERPROFILE\maestro\bin"`
+→ Maestro is not on PATH.
+```bash
+# macOS/Linux — add to shell profile (~/.zshrc or ~/.bashrc)
+export PATH="$PATH:$HOME/.maestro/bin"
 
-**`adb devices` shows nothing**  
-→ Enable USB Debugging on your phone. Try a different USB cable (data cable, not charge-only).
-
-**`INSTALL_FAILED_VERSION_DOWNGRADE`**  
-→ Uninstall the existing app first: `adb uninstall com.yourapp.id`
-
-**Flow fails immediately with "App not found" or launches wrong app**  
-→ `appId:` in flow files cannot use env vars. Hardcode the package/bundle ID directly.
-
-**`Unknown Property: timeout` in assertVisible**  
-→ Replace `assertVisible: text: "..." timeout: N` with `extendedWaitUntil: visible: text: "..." timeout: N`.
-
-**`Invalid Command: clearText`**  
-→ `clearText` was removed. Use `eraseText: 100` instead.
-
-**`TypeError: Cannot read property '...' of undefined`**  
-→ This usually means a `${VAR:-default.with.dots}` default value was used. Maestro evaluates defaults as JavaScript — dots in the default cause property chain errors. Remove the `:-default` and pass values via `--env` instead.
-
-**Element not found / tap fails even though element is visible**  
-→ Use resource IDs (`tapOn: id: "nameET"`) instead of text or coordinates. To find IDs:
-```powershell
-adb shell uiautomator dump /sdcard/ui.xml && adb pull /sdcard/ui.xml
+# Windows (current session)
+$env:PATH = "$env:PATH;$env:USERPROFILE\maestro\bin"
 ```
 
-**Coordinate taps hit the wrong element**  
-→ The safe coordinate reference for SauceDemo Android (1080×2400 screen):
-- Username field: `50%, 34%`
-- Password field: `50%, 46%`
-- Login button: `50%, 59%`
-- Hamburger menu: `7%, 8%`
+**`adb devices` shows nothing**  
+→ Enable USB Debugging on your phone. Try a different cable (data cable, not charge-only).
 
-**Tapping the credential shortcut auto-fills both username and password**  
-→ That is intentional — `tapOn: "bod@example.com"` in `perform_login.yaml` uses this shortcut to fill both fields at once. For validation tests that need only one field filled, tap the field directly using its resource ID instead.
+**`INSTALL_FAILED_VERSION_DOWNGRADE`**  
+→ Uninstall the existing app first: `adb uninstall com.saucelabs.mydemoapp.android`
+
+**`Command failed (tcp:7001): closed` on Android**  
+→ Stale Maestro daemon. Kill it and reset the port forward:
+```bash
+pkill -f maestro-d
+adb forward --remove-all
+adb forward tcp:7001 tcp:7001
+# Then re-run your test
+```
+
+**Android App Compatibility dialog blocks the test**  
+→ The SauceLabs demo APK is not 16 KB aligned — Android 15 emulators show this warning on every screen. The flows handle it automatically with optional `tapOn: "OK"` steps. If a new screen triggers it, add another optional OK tap before your assertion.
+
+**`Element not found: bob@example.com` on Android**  
+→ The Android app uses `bod@example.com` (not `bob`). Make sure your `.env` has `ANDROID_EMAIL=bod@example.com` and you are passing `--env ANDROID_EMAIL=bod@example.com`.
+
+**iOS password field stays empty after login**  
+→ The iOS perform_login subflow uses a credential shortcut (`tapOn: "${IOS_EMAIL}"`) to fill the username, then taps the password field by coordinate. If this breaks, it is usually because the screen layout shifted — check the `y≈53%` coordinate in `flows/ios/subflows/perform_login.yaml`.
+
+**`Assertion is false: "Products" is visible` after login**  
+→ The `"Products"` heading is not exposed in the iOS accessibility tree. The flows assert `"Sauce Labs Backpack"` (a product list item) instead. If you see this error, a product card element name may have changed.
+
+**`Unable to find a booted simulator` (iOS)**  
+→ Boot a simulator first:
+```bash
+xcrun simctl boot "iPhone 16 Pro"
+open -a Simulator
+```
 
 **Flow passes locally but fails in CI**  
-→ Ensure the emulator is fully booted before running Maestro. Add a boot-wait step in your CI script.
+→ Ensure the emulator is fully booted before running Maestro. Wait for `sys.boot_completed=1`:
+```bash
+adb wait-for-device
+until [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; do sleep 2; done
+```
 
 ---
 
 ## Quick Reference
 
-```powershell
-# Add Maestro to PATH (current session)
-$env:PATH = "$env:PATH;$env:USERPROFILE\maestro\bin"
-
-# Install Android APK
-adb install -r builds\android\mda-2.2.0-25.apk
+```bash
+# ── Android ──────────────────────────────────────────────────────────
+# Install APK
+adb install -r app/android/mda-2.2.0-25.apk
 
 # Run one flow
-maestro test flows/android/TC-AND-001_login_valid.yaml `
-    --env "EMAIL=bod@example.com" --env "PASSWORD=10203040"
+maestro test flows/android/TC-AND-001_login_valid.yaml \
+    --env ANDROID_EMAIL=bod@example.com --env PASSWORD=10203040
 
-# Run all Android tests
-maestro test flows/android `
-    --env "EMAIL=bod@example.com" --env "PASSWORD=10203040"
+# Run all Android flows
+maestro test flows/android/ \
+    --env ANDROID_EMAIL=bod@example.com --env PASSWORD=10203040
 
-# Inspect your app live (find element IDs)
+# ── iOS (Mac only) ────────────────────────────────────────────────────
+# Boot simulator and install app
+xcrun simctl boot "iPhone 16 Pro" && open -a Simulator
+xcrun simctl install booted "app/ios/Payload/My Demo App.app"
+
+# Run one flow
+maestro test flows/ios/TC-IOS-001_login_valid.yaml \
+    --env IOS_EMAIL=bob@example.com --env PASSWORD=10203040
+
+# Run all iOS flows
+maestro test flows/ios/ \
+    --env IOS_EMAIL=bob@example.com --env PASSWORD=10203040
+
+# ── Inspect ───────────────────────────────────────────────────────────
+# Live element inspector
 maestro studio
 
-# Dump UI hierarchy for element inspection
+# Dump Android UI hierarchy
 adb shell uiautomator dump /sdcard/ui.xml && adb pull /sdcard/ui.xml
 ```
-# maestro_automation

@@ -5,7 +5,7 @@ tags:
   - auth
   - smoke
 env:
-  EMAIL: ${EMAIL}
+  EMAIL: ${IOS_EMAIL}
   PASSWORD: ${PASSWORD}
 onFlowStart:
   - takeScreenshot: TC-IOS-001_start
@@ -22,19 +22,19 @@ onFlowComplete:
 - waitForAnimationToEnd
 
 - runFlow:
-    file: ../subflows/navigate_to_login.yaml
+    file: ./subflows/navigate_to_login.yaml
     env:
       APP_ID: com.saucelabs.mydemo.app.ios
 
 - runFlow:
-    file: ../subflows/perform_login.yaml
+    file: ./subflows/perform_login.yaml
     env:
       APP_ID: com.saucelabs.mydemo.app.ios
-      EMAIL: ${EMAIL}
+      EMAIL: ${IOS_EMAIL}
       PASSWORD: ${PASSWORD}
 
 # Assert: Products catalog screen is displayed
 - extendedWaitUntil:
     visible:
-      text: "Products"
-    timeout: 10000
+      text: "Sauce Labs Backpack"
+    timeout: 20000

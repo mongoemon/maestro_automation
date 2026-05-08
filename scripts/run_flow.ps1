@@ -66,7 +66,7 @@ if ($Platform -eq "android" -and $envVars["ANDROID_APP_ID"]) {
 }
 
 # Forward credentials
-foreach ($key in @("EMAIL", "PASSWORD")) {
+foreach ($key in @("ANDROID_EMAIL", "IOS_EMAIL", "PASSWORD")) {
     if ($envVars[$key]) {
         $maestroArgs += "--env", "$key=$($envVars[$key])"
     }

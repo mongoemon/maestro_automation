@@ -9,3 +9,9 @@ appId: ${APP_ID}
 - tapOn: "Login"
 
 - waitForAnimationToEnd
+
+- tapOn:
+    text: "OK"
+    optional: true
+
+- waitForAnimationToEnd
