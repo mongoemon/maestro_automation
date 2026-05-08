@@ -92,22 +92,48 @@ maestro --version
 1. Open Android Studio
 2. Click **Device Manager** in the toolbar (phone icon)
 3. Click **Create Device**
-4. Pick **Pixel 7** (recommended — tested profile)
+4. Pick a Pixel profile (any Pixel works — see tested profiles below)
 5. Select system image: download **API 36** or **API 33+**
 6. Click **Finish**
 
-Start the emulator:
-- Click the **▶ Play** button next to your AVD
-- Wait until the Android home screen appears (~1 minute first time)
+### Start from Android Studio
 
-Verify Maestro can see it:
+Click the **▶ Play** button next to your AVD in Device Manager.
+
+### Start from the command line (no Android Studio needed)
+
+First, add the `emulator` tool to your PATH (run once):
+
+```powershell
+$emuPath = "$env:LOCALAPPDATA\Android\Sdk\emulator"
+[Environment]::SetEnvironmentVariable("PATH", "$env:PATH;$emuPath", "User")
+$env:PATH = "$env:PATH;$emuPath"
+```
+
+The first line persists the path for future terminals. The second applies it to the current session so you don't need to restart. Then:
+
+```powershell
+# List all AVDs on this machine
+emulator -list-avds
+# Pixel_6_API_36
+# Pixel_7_API_36
+
+# Start one (runs in the background — terminal returns immediately)
+Start-Process emulator -ArgumentList "-avd Pixel_6_API_36"
+```
+
+Wait ~30–60 seconds for the home screen to appear, then verify:
 
 ```powershell
 adb devices
 # emulator-5554   device   ← ready
 ```
 
-> **This project was tested on:** Pixel_7_API_36 emulator (`emulator-5554`).
+> **Tested profiles:**
+> - Windows: **Pixel 6**, API 36 (`emulator-5554`)
+> - macOS: **Pixel 7**, API 36 (`emulator-5554`)
+>
+> Any Pixel profile on API 33+ works. If you use a different AVD, no flow changes are needed — Maestro targets the app by package name, not the device profile.
 
 ---
 
@@ -172,7 +198,7 @@ Open the app manually once to confirm it launches correctly.
 
 ---
 
-## 7. Find Your App's Package Name
+## 8. Find Your App's Package Name
 
 You need this for `appId:` in each flow file.
 
@@ -194,16 +220,14 @@ Open `android/app/build.gradle` and look for `applicationId`.
 
 ---
 
-## 8. Run Your First Test
+## 9. Run Your First Test
 
 ```powershell
 # Add Maestro to PATH if not already done
 $env:PATH = "$env:PATH;$env:USERPROFILE\maestro\bin"
 
 # Run TC-AND-001
-maestro test flows/android/TC-AND-001_login_valid.yaml `
-    --env "ANDROID_EMAIL=bod@example.com" `
-    --env "PASSWORD=10203040"
+maestro test flows/android/TC-AND-001_login_valid.yaml --env "ANDROID_EMAIL=bod@example.com" --env "PASSWORD=10203040"
 ```
 
 Expected output (all green):
@@ -216,7 +240,7 @@ Assert that "Products" is visible... COMPLETED
 
 ---
 
-## 9. Run All Android Tests
+## 10. Run All Android Tests
 
 ```powershell
 maestro test flows/android `
