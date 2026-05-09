@@ -1,6 +1,7 @@
 # Android Setup Guide
 
-Complete guide for setting up Android testing with Maestro on Windows.
+Complete guide for setting up Android testing with Maestro.  
+Steps are shown for both **Windows** and **macOS** where they differ.
 
 ---
 
@@ -9,10 +10,19 @@ Complete guide for setting up Android testing with Maestro on Windows.
 Maestro requires Java 11 or higher.
 
 1. Download from https://adoptium.net
-2. Run the installer (choose "Add to PATH" and "Set JAVA_HOME" during setup)
-3. Verify:
+2. Run the installer
 
-```powershell
+### Windows
+During setup choose **"Add to PATH"** and **"Set JAVA_HOME"**.
+
+### macOS
+```bash
+brew install --cask temurin
+```
+
+Verify on both platforms:
+
+```bash
 java -version
 # openjdk version "11.x.x" or higher
 ```
@@ -32,34 +42,54 @@ java -version
 
 ## 3. Add `adb` to your PATH
 
-`adb` is the Android Debug Bridge — Maestro uses it to communicate with devices.
+`adb` (Android Debug Bridge) is how Maestro talks to the emulator.
 
-1. Find your SDK location:
-   - Android Studio → **Settings → Appearance & Behavior → System Settings → Android SDK**
-   - Copy the **Android SDK Location** (e.g. `C:\Users\YourName\AppData\Local\Android\Sdk`)
+**First, find your SDK location:**  
+Android Studio → **Settings → Appearance & Behavior → System Settings → Android SDK**  
+Copy the **Android SDK Location** shown there.
 
-2. Add `platform-tools` to PATH (run once in PowerShell):
+### Windows
+
+Run once in PowerShell:
 
 ```powershell
 $sdkPath = "$env:LOCALAPPDATA\Android\Sdk\platform-tools"
 [Environment]::SetEnvironmentVariable("PATH", "$env:PATH;$sdkPath", "User")
 ```
 
-3. Restart your terminal, then verify:
+Restart your terminal, then verify:
 
 ```powershell
 adb version
 # Android Debug Bridge version 1.x.x
 ```
 
+### macOS
+
+Add to `~/.zshrc` (or `~/.bashrc`):
+
+```bash
+export PATH="$PATH:$HOME/Library/Android/sdk/platform-tools"
+```
+
+Reload and verify:
+
+```bash
+source ~/.zshrc
+adb version
+# Android Debug Bridge version 1.x.x
+```
+
 ---
 
-## 4. Install Maestro CLI (Windows)
+## 4. Install Maestro CLI
 
-The automatic installer may not work in all network environments. Manual install is reliable:
+### Windows
+
+The automatic installer may not work in all network environments. Manual install is more reliable:
 
 1. Go to: https://github.com/mobile-dev-inc/maestro/releases
-2. Download the latest `maestro_win.zip` (or the asset ending in `-win.zip`)
+2. Download the latest asset ending in `-win.zip`
 3. Extract to `C:\Users\<YourName>\maestro\`
 4. Add to PATH permanently:
 
@@ -75,7 +105,6 @@ The automatic installer may not work in all network environments. Manual install
 
 ```powershell
 maestro --version
-# Maestro v2.x.x
 ```
 
 > **Quick fix for current session only (no restart needed):**
@@ -84,6 +113,30 @@ maestro --version
 > ```
 
 > **This project uses Maestro v2.5.1** installed at `C:\Users\nekoe\maestro\bin\`.
+
+### macOS
+
+Use the automatic installer:
+
+```bash
+curl -Ls "https://get.maestro.mobile.dev" | bash
+```
+
+This adds Maestro to `~/.maestro/bin`. Add it to your PATH:
+
+```bash
+export PATH="$PATH:$HOME/.maestro/bin"
+source ~/.zshrc
+```
+
+Or add the export line to `~/.zshrc` so it persists across sessions.
+
+Verify:
+
+```bash
+maestro --version
+# Maestro v2.x.x
+```
 
 ---
 
@@ -100,31 +153,49 @@ maestro --version
 
 Click the **▶ Play** button next to your AVD in Device Manager.
 
-### Start from the command line (no Android Studio needed)
+### Start from the command line
 
-First, add the `emulator` tool to your PATH (run once):
+**Windows** — add the `emulator` tool to PATH (run once):
 
 ```powershell
 $emuPath = "$env:LOCALAPPDATA\Android\Sdk\emulator"
 [Environment]::SetEnvironmentVariable("PATH", "$env:PATH;$emuPath", "User")
-$env:PATH = "$env:PATH;$emuPath"
+$env:PATH = "$env:PATH;$emuPath"   # also apply to current session
 ```
 
-The first line persists the path for future terminals. The second applies it to the current session so you don't need to restart. Then:
+**macOS** — add to `~/.zshrc`:
 
-```powershell
+```bash
+export PATH="$PATH:$HOME/Library/Android/sdk/emulator"
+source ~/.zshrc
+```
+
+**Start the emulator (both platforms):**
+
+```bash
 # List all AVDs on this machine
 emulator -list-avds
 # Pixel_6_API_36
 # Pixel_7_API_36
+```
 
-# Start one (runs in the background — terminal returns immediately)
+**Windows:**
+
+```powershell
+# Runs in the background — terminal returns immediately
 Start-Process emulator -ArgumentList "-avd Pixel_6_API_36"
+```
+
+**macOS:**
+
+```bash
+# & runs it in the background
+emulator -avd Pixel_7_API_36 &
 ```
 
 Wait ~30–60 seconds for the home screen to appear, then verify:
 
-```powershell
+```bash
 adb devices
 # emulator-5554   device   ← ready
 ```
@@ -145,52 +216,68 @@ The script `scripts/download_apps.py` downloads the APK defined in `scripts/apps
 
 **First-time setup:**
 
+**Windows:**
 ```powershell
-# 1. Install the only dependency
 pip install pyyaml
-
-# 2. Copy the example config and fill in URLs
 Copy-Item scripts\apps.yaml.example scripts\apps.yaml
-# Edit scripts\apps.yaml — set source, filename, and the matching *_url
 ```
+
+**macOS:**
+```bash
+pip3 install pyyaml
+cp scripts/apps.yaml.example scripts/apps.yaml
+```
+
+Edit `scripts/apps.yaml` — set `source`, `filename`, and the matching `*_url`.
 
 **Download:**
 
-```powershell
+```bash
 # Both platforms
-python scripts/download_apps.py
+python scripts/download_apps.py          # (use python3 on macOS if needed)
 
 # Android only
 python scripts/download_apps.py --android
 
-# Force re-download even if file already exists
+# Force re-download even if file exists
 python scripts/download_apps.py --android --force
 ```
 
 For private GitHub releases, set your token first:
 
+**Windows:**
 ```powershell
 $env:GITHUB_TOKEN = "ghp_xxxxxxxxxxxx"
 python scripts/download_apps.py --android
+```
+
+**macOS:**
+```bash
+export GITHUB_TOKEN="ghp_xxxxxxxxxxxx"
+python3 scripts/download_apps.py --android
 ```
 
 The APK lands at `app/android/<filename>` (gitignored).
 
 ### Option B — Manual copy
 
-Place the APK directly into `app/android/`:
-
+**Windows:**
 ```powershell
 Copy-Item C:\path\to\your.apk app\android\your.apk
+```
+
+**macOS:**
+```bash
+cp ~/Downloads/your.apk app/android/your.apk
 ```
 
 ---
 
 ## 7. Install the APK
 
-```powershell
+```bash
 # -r allows reinstalling over an existing version
-adb install -r app\android\mda-2.2.0-25.apk
+adb install -r app/android/mda-2.2.0-25.apk
 # Success
 ```
 
@@ -202,19 +289,25 @@ Open the app manually once to confirm it launches correctly.
 
 You need this for `appId:` in each flow file.
 
-**Method 1 — from the APK (requires `aapt` in SDK build-tools):**
+**Method 1 — from a running emulator (both platforms):**
+```bash
+adb shell pm list packages | grep saucelabs
+# package:com.saucelabs.mydemoapp.android
+```
+
+**Method 2 — from the APK using `aapt`:**
+
+Windows:
 ```powershell
 & "$env:LOCALAPPDATA\Android\Sdk\build-tools\<version>\aapt.exe" `
-    dump badging builds\android\your.apk | Select-String "package: name"
+    dump badging app\android\your.apk | Select-String "package: name"
 ```
 
-**Method 2 — from a running emulator:**
-```powershell
-adb shell pm list packages | Select-String "yourapp"
+macOS:
+```bash
+$HOME/Library/Android/sdk/build-tools/<version>/aapt \
+    dump badging app/android/your.apk | grep "package: name"
 ```
-
-**Method 3 — from source code:**
-Open `android/app/build.gradle` and look for `applicationId`.
 
 > **This project:** `com.saucelabs.mydemoapp.android`
 
@@ -222,28 +315,52 @@ Open `android/app/build.gradle` and look for `applicationId`.
 
 ## 9. Run Your First Test
 
+### Windows
+
 ```powershell
 # Add Maestro to PATH if not already done
 $env:PATH = "$env:PATH;$env:USERPROFILE\maestro\bin"
 
-# Run TC-AND-001
-maestro test flows/android/TC-AND-001_login_valid.yaml --env "ANDROID_EMAIL=bod@example.com" --env "PASSWORD=10203040"
+maestro test flows/android/TC-AND-001_login_valid.yaml `
+    --env ANDROID_EMAIL=bod@example.com `
+    --env PASSWORD=10203040
+```
+
+### macOS
+
+```bash
+maestro test flows/android/TC-AND-001_login_valid.yaml \
+    --env ANDROID_EMAIL=bod@example.com \
+    --env PASSWORD=10203040
 ```
 
 Expected output (all green):
+
 ```
 Running on emulator-5554
 Launch app "com.saucelabs.mydemoapp.android" with clear state... COMPLETED
 ...
-Assert that "Products" is visible... COMPLETED
+Assert that "Sauce Labs Backpack" is visible... COMPLETED
 ```
 
 ---
 
 ## 10. Run All Android Tests
 
+### Windows
+
 ```powershell
-maestro test flows/android --env "ANDROID_EMAIL=bod@example.com" --env "PASSWORD=10203040"
+maestro test flows/android `
+    --env ANDROID_EMAIL=bod@example.com `
+    --env PASSWORD=10203040
+```
+
+### macOS
+
+```bash
+maestro test flows/android \
+    --env ANDROID_EMAIL=bod@example.com \
+    --env PASSWORD=10203040
 ```
 
 Expected: `5/5 Flows Passed`
@@ -252,23 +369,74 @@ Expected: `5/5 Flows Passed`
 
 ## 11. Generate an HTML Test Report
 
-Maestro can output JUnit XML which you then convert to HTML.
+**Install once (both platforms):**
 
-**Install once:**
-```powershell
-pip install -r requirements.txt
+```bash
+pip install -r requirements.txt    # Windows: pip
+pip3 install -r requirements.txt   # macOS: pip3
 ```
 
 **Run tests with XML output:**
+
+Windows:
 ```powershell
-maestro test flows/android --env "ANDROID_EMAIL=bod@example.com" --env "PASSWORD=10203040" --format junit --output results.xml
+maestro test flows/android `
+    --env ANDROID_EMAIL=bod@example.com `
+    --env PASSWORD=10203040 `
+    --format junit --output results.xml
 ```
 
-**Convert to HTML and open:**
+macOS:
+```bash
+maestro test flows/android \
+    --env ANDROID_EMAIL=bod@example.com \
+    --env PASSWORD=10203040 \
+    --format junit --output results.xml
+```
+
+**Convert to HTML:**
+
+Windows:
 ```powershell
 junit2html results.xml report.html
 Start-Process report.html
 ```
+
+macOS:
+```bash
+junit2html results.xml report.html
+open report.html
+```
+
+---
+
+## 12. Use the Helper Scripts (Windows only)
+
+The PowerShell scripts in `scripts/` load `.env` automatically — no `--env` flags needed.
+
+Copy `.env.example` to `.env` and fill in credentials:
+
+```
+ANDROID_EMAIL=bod@example.com
+IOS_EMAIL=bob@example.com
+PASSWORD=10203040
+```
+
+Then run:
+
+```powershell
+# Run one flow
+.\scripts\run_flow.ps1 -Flow flows/android/TC-AND-001_login_valid.yaml -Platform android
+
+# Run all Android flows
+.\scripts\run_all.ps1 -Platform android
+
+# Run a tag group
+.\scripts\run_suite.ps1 -Platform android -Suite smoke
+```
+
+> **macOS users:** Use the `maestro test` commands from steps 9–11 directly.  
+> The `.env` file pattern with PowerShell scripts is Windows-specific.
 
 ---
 
@@ -276,12 +444,14 @@ Start-Process report.html
 
 | Error | Fix |
 |-------|-----|
-| `adb: command not found` | Add `platform-tools` to PATH (step 3 above) |
-| `maestro: command not found` | Add `maestro\bin` to PATH (step 4 above) |
-| `INSTALL_FAILED_VERSION_DOWNGRADE` | `adb uninstall com.your.app` first, then re-install |
+| `adb: command not found` | Add `platform-tools` to PATH (step 3) |
+| `maestro: command not found` | Add Maestro `bin` to PATH (step 4) |
+| `INSTALL_FAILED_VERSION_DOWNGRADE` | `adb uninstall com.saucelabs.mydemoapp.android` first |
 | `device offline` | Unplug/replug USB or restart emulator |
-| `No connected devices` | `adb kill-server && adb start-server`, then `adb devices` |
+| `No connected devices` | `adb kill-server && adb start-server && adb devices` |
+| `Command failed (tcp:7001): closed` | `pkill -f maestro-d && adb forward --remove-all && adb forward tcp:7001 tcp:7001` |
 | App crashes on launch | `adb logcat` to see the crash stack trace |
-| Flow launches wrong app / Android home screen | `appId:` cannot use env vars — hardcode the package name |
-| `Unknown Property: timeout` | Use `extendedWaitUntil:` instead of `assertVisible: timeout:` |
+| Flow launches wrong app | `appId:` cannot use env vars — hardcode the package name |
+| `Unknown Property: timeout` on assertVisible | Use `extendedWaitUntil:` instead |
 | `Invalid Command: clearText` | Use `eraseText: 100` instead |
+| Android App Compatibility dialog blocks screen | APK not 16 KB page-aligned on Android 15 — add `tapOn: "OK" optional: true` after navigation steps |
