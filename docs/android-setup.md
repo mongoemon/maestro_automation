@@ -308,8 +308,7 @@ Windows:
 
 macOS:
 ```bash
-$HOME/Library/Android/sdk/build-tools/<version>/aapt \
-    dump badging app/android/your.apk | grep "package: name"
+$HOME/Library/Android/sdk/build-tools/<version>/aapt dump badging app/android/your.apk | grep "package: name"
 ```
 
 > **This project:** `com.saucelabs.mydemoapp.android`
@@ -332,9 +331,7 @@ maestro test flows/android/TC-AND-001_login_valid.yaml `
 ### macOS
 
 ```bash
-maestro test flows/android/TC-AND-001_login_valid.yaml \
-    --env ANDROID_EMAIL=bod@example.com \
-    --env PASSWORD=10203040
+maestro test flows/android/TC-AND-001_login_valid.yaml --env ANDROID_EMAIL=bod@example.com --env PASSWORD=10203040
 ```
 
 Expected output (all green):
@@ -361,9 +358,7 @@ maestro test flows/android `
 ### macOS
 
 ```bash
-maestro test flows/android \
-    --env ANDROID_EMAIL=bod@example.com \
-    --env PASSWORD=10203040
+maestro test flows/android --env ANDROID_EMAIL=bod@example.com --env PASSWORD=10203040
 ```
 
 Expected: `5/5 Flows Passed`
@@ -391,10 +386,7 @@ maestro test flows/android `
 
 macOS:
 ```bash
-maestro test flows/android \
-    --env ANDROID_EMAIL=bod@example.com \
-    --env PASSWORD=10203040 \
-    --format junit --output results.xml
+maestro test flows/android --env ANDROID_EMAIL=bod@example.com --env PASSWORD=10203040 --format junit --output results.xml
 ```
 
 **Convert to HTML:**
