@@ -18,27 +18,37 @@ maestro_automation/
 │           └── My Demo App.app     ← extracted from the zip
 │
 ├── flows/                          ← All Maestro test flows
-│   ├── android/                    ← Android test cases
+│   ├── android/                    ← Android test cases (thin orchestrators)
 │   │   ├── TC-AND-001_login_valid.yaml
 │   │   ├── TC-AND-002_products_after_login.yaml
 │   │   ├── TC-AND-003_login_error_empty_username.yaml
 │   │   ├── TC-AND-004_login_error_empty_password.yaml
 │   │   └── TC-AND-005_logout.yaml
 │   │
-│   ├── ios/                        ← iOS test cases (mirror of Android)
+│   ├── ios/                        ← iOS test cases (thin orchestrators)
 │   │   ├── TC-IOS-001_login_valid.yaml
 │   │   ├── TC-IOS-002_products_after_login.yaml
 │   │   ├── TC-IOS-003_login_error_empty_username.yaml
 │   │   ├── TC-IOS-004_login_error_empty_password.yaml
 │   │   ├── TC-IOS-005_logout.yaml
-│   │   └── subflows/               ← iOS-specific helpers
-│   │       ├── navigate_to_login.yaml
-│   │       └── perform_login.yaml
+│   │   └── subflows/               ← iOS page objects
+│   │       ├── login/
+│   │       │   ├── navigate.yaml   ← open More tab → tap Login entry
+│   │       │   └── login.yaml      ← navigate + fill credentials + submit
+│   │       ├── products/
+│   │       │   └── assert_loaded.yaml  ← assert catalog item visible
+│   │       └── more_tab/
+│   │           └── logout.yaml     ← open More tab → LogOut → confirm LOGOUT
 │   │
-│   └── subflows/                   ← Shared helpers (used by Android flows)
-│       ├── common_actions.yaml
-│       ├── navigate_to_login.yaml
-│       └── perform_login.yaml
+│   └── subflows/                   ← Android page objects + shared helpers
+│       ├── common_actions.yaml     ← dismiss system dialogs (shared by both platforms)
+│       ├── login/
+│       │   ├── navigate.yaml       ← open hamburger drawer → tap Log In
+│       │   └── login.yaml          ← navigate + credential shortcut + submit
+│       ├── products/
+│       │   └── assert_loaded.yaml  ← assert catalog item visible
+│       └── drawer/
+│           └── logout.yaml         ← open drawer → Log Out → confirm LOGOUT
 │
 ├── scripts/
 │   ├── download_apps.py            ← Download APK / IPA from GitHub Releases
@@ -110,39 +120,45 @@ onFlowComplete:
 - ...
 ```
 
-### Subflow architecture
+### Subflow architecture (Page Object Model)
 
-Flows call reusable subflows via `runFlow:`. This keeps the login sequence in one place and avoids copy-paste.
+Flows call reusable page object subflows via `runFlow:`. Each subflow owns one page or action — test cases are thin orchestrators that wire page objects together.
 
 **Android call chain:**
 
 ```
 TC-AND-001_login_valid.yaml
- └── flows/subflows/navigate_to_login.yaml
- │    └── flows/subflows/common_actions.yaml   (dismiss system dialogs)
- └── flows/subflows/perform_login.yaml
+ └── flows/subflows/login/login.yaml
+ │    └── flows/subflows/login/navigate.yaml
+ │         └── flows/subflows/common_actions.yaml   (dismiss system dialogs)
+ └── flows/subflows/products/assert_loaded.yaml
 ```
 
 **iOS call chain:**
 
 ```
 TC-IOS-001_login_valid.yaml
- └── flows/ios/subflows/navigate_to_login.yaml
- │    └── flows/subflows/common_actions.yaml   (shared — dismiss system dialogs)
- └── flows/ios/subflows/perform_login.yaml
+ └── flows/ios/subflows/login/login.yaml
+ │    └── flows/ios/subflows/login/navigate.yaml
+ │         └── flows/subflows/common_actions.yaml   (shared — dismiss system dialogs)
+ └── flows/ios/subflows/products/assert_loaded.yaml
 ```
 
-iOS has its own `navigate_to_login.yaml` and `perform_login.yaml` in `flows/ios/subflows/` because the login UI interaction differs between platforms (iOS uses a tab bar to reach Login; Android uses a hamburger drawer). `common_actions.yaml` is shared because dismissing system permission dialogs is the same on both.
+iOS has its own `login/` and `products/` page objects because the navigation differs (tab bar vs hamburger drawer). `common_actions.yaml` is shared because dismissing system permission dialogs is identical on both platforms.
 
-### Subflow responsibilities
+### Page object responsibilities
 
 | File | Purpose |
 |------|---------|
-| `common_actions.yaml` | Taps Allow / OK / Continue to dismiss any system dialog that appears on app launch |
-| `navigate_to_login.yaml` (shared) | Opens the hamburger drawer and taps "Log In" (Android). Also dismisses the App Compatibility dialog that appears on the login screen |
-| `navigate_to_login.yaml` (ios) | Taps the "More" tab then "Login Button" to reach the login screen (iOS) |
-| `perform_login.yaml` (shared) | Taps the credential shortcut link to auto-fill both username and password, then taps Login (Android). Also dismisses the App Compatibility dialog after navigating to the products screen |
-| `perform_login.yaml` (ios) | Taps the credential shortcut to fill the username field, then taps the password field and types the password manually (iOS shortcuts fill username only) |
+| `subflows/common_actions.yaml` | Taps Allow / OK / Continue to dismiss any system dialog on app launch (shared) |
+| `subflows/login/navigate.yaml` | Opens the hamburger drawer, taps "Log In", dismisses App Compat dialog (Android) |
+| `subflows/login/login.yaml` | Calls navigate, taps credential shortcut (auto-fills both fields), submits (Android) |
+| `subflows/products/assert_loaded.yaml` | Waits up to 20 s for a catalog item to confirm the products screen loaded (Android) |
+| `subflows/drawer/logout.yaml` | Opens drawer, taps "Log Out", confirms LOGOUT, dismisses App Compat dialog (Android) |
+| `ios/subflows/login/navigate.yaml` | Taps the "More" tab, taps "Login Button" to reach the login screen (iOS) |
+| `ios/subflows/login/login.yaml` | Calls navigate, taps email shortcut (fills username), types password, submits (iOS) |
+| `ios/subflows/products/assert_loaded.yaml` | Waits up to 20 s for a catalog item visible (iOS — "Products" heading not in a11y tree) |
+| `ios/subflows/more_tab/logout.yaml` | Opens More tab, taps "LogOut-menu-item", confirms LOGOUT (iOS) |
 
 ### Tags
 

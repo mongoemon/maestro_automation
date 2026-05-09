@@ -1,0 +1,22 @@
+appId: ${APP_ID}
+---
+# Open the hamburger drawer
+- tapOn:
+    point: "7%, 8%"
+
+- waitForAnimationToEnd
+
+- tapOn: "Log Out"
+
+- waitForAnimationToEnd
+
+- tapOn: "LOGOUT"
+
+- waitForAnimationToEnd
+
+# Dismiss Android App Compatibility dialog that reappears on the login screen
+- tapOn:
+    text: "OK"
+    optional: true
+
+- waitForAnimationToEnd

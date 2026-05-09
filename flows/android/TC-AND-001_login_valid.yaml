@@ -5,36 +5,24 @@ tags:
   - auth
   - smoke
 env:
-  EMAIL: ${ANDROID_EMAIL}
+  ANDROID_EMAIL: ${ANDROID_EMAIL}
   PASSWORD: ${PASSWORD}
 onFlowStart:
   - takeScreenshot: TC-AND-001_start
 onFlowComplete:
   - takeScreenshot: TC-AND-001_complete
 ---
-# TC-AND-001: Login with valid credentials
-# Precondition: App is installed. User is on the home screen.
-# Expected: Products catalog screen is displayed after login.
-
 - launchApp:
     clearState: true
 
-- waitForAnimationToEnd
-
 - runFlow:
-    file: ../subflows/navigate_to_login.yaml
+    file: ../subflows/login/login.yaml
     env:
       APP_ID: com.saucelabs.mydemoapp.android
-
-- runFlow:
-    file: ../subflows/perform_login.yaml
-    env:
-      APP_ID: com.saucelabs.mydemoapp.android
-      EMAIL: ${ANDROID_EMAIL}
+      ANDROID_EMAIL: ${ANDROID_EMAIL}
       PASSWORD: ${PASSWORD}
 
-# Assert: Products catalog screen is displayed
-- extendedWaitUntil:
-    visible:
-      text: "Products"
-    timeout: 10000
+- runFlow:
+    file: ../subflows/products/assert_loaded.yaml
+    env:
+      APP_ID: com.saucelabs.mydemoapp.android

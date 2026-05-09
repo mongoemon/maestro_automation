@@ -1,0 +1,24 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    file: ./navigate.yaml
+    env:
+      APP_ID: ${APP_ID}
+
+# Credential shortcut fills username without opening the keyboard
+- tapOn: "${IOS_EMAIL}"
+
+- waitForAnimationToEnd
+
+# Password field tap is reliable because no keyboard obscures the layout
+- tapOn:
+    point: "50%, 53%"
+
+- inputText: ${PASSWORD}
+
+# "Login" text appears twice (page title at index 0, submit button at index 1)
+- tapOn:
+    text: "Login"
+    index: 1
+
+- waitForAnimationToEnd

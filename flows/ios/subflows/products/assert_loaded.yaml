@@ -1,0 +1,7 @@
+appId: ${APP_ID}
+---
+# "Products" heading is not in the iOS a11y tree; product items are.
+- extendedWaitUntil:
+    visible:
+      text: "Sauce Labs Backpack"
+    timeout: 20000

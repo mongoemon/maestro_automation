@@ -5,71 +5,43 @@ tags:
   - auth
   - smoke
 env:
-  EMAIL: ${IOS_EMAIL}
+  IOS_EMAIL: ${IOS_EMAIL}
   PASSWORD: ${PASSWORD}
 onFlowStart:
   - takeScreenshot: TC-IOS-005_start
 onFlowComplete:
   - takeScreenshot: TC-IOS-005_complete
 ---
-# TC-IOS-005: Logout returns Login option to menu
-# Precondition: App is installed. User starts fresh.
-# Expected: After logout, "Log In" is visible in the navigation drawer.
-
 - launchApp:
     clearState: true
 
-- waitForAnimationToEnd
-
-# Log in with valid credentials
 - runFlow:
-    file: ./subflows/navigate_to_login.yaml
+    file: ./subflows/login/login.yaml
     env:
       APP_ID: com.saucelabs.mydemo.app.ios
-
-- runFlow:
-    file: ./subflows/perform_login.yaml
-    env:
-      APP_ID: com.saucelabs.mydemo.app.ios
-      EMAIL: ${IOS_EMAIL}
+      IOS_EMAIL: ${IOS_EMAIL}
       PASSWORD: ${PASSWORD}
 
-# Assert: Products catalog is displayed after login
-- extendedWaitUntil:
-    visible:
-      text: "Sauce Labs Backpack"
-    timeout: 20000
+- runFlow:
+    file: ./subflows/products/assert_loaded.yaml
+    env:
+      APP_ID: com.saucelabs.mydemo.app.ios
 
 - takeScreenshot: TC-IOS-005_after_login
 
-# Open More tab to access Log Out
-- tapOn:
-    id: "More-tab-item"
-
-- waitForAnimationToEnd
-
-# Tap "Log Out" — uses same accessibility id as Login button, text changes based on auth state
-- tapOn:
-    id: "LogOut-menu-item"
-
-- waitForAnimationToEnd
-
-- takeScreenshot: TC-IOS-005_logout_dialog
-
-# Confirm logout in the dialog
-- tapOn: "LOGOUT"
-
-- waitForAnimationToEnd
+- runFlow:
+    file: ./subflows/more_tab/logout.yaml
+    env:
+      APP_ID: com.saucelabs.mydemo.app.ios
 
 - takeScreenshot: TC-IOS-005_after_logout
 
-# Open More tab again to verify logout state
+# Re-open More tab to verify logout state
 - tapOn:
     id: "More-tab-item"
 
 - waitForAnimationToEnd
 
-# Assert: Login Button is visible again (confirms user is logged out)
 - extendedWaitUntil:
     visible:
       id: "Login Button"

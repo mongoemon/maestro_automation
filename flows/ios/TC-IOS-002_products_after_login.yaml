@@ -5,39 +5,27 @@ tags:
   - auth
   - smoke
 env:
-  EMAIL: ${IOS_EMAIL}
+  IOS_EMAIL: ${IOS_EMAIL}
   PASSWORD: ${PASSWORD}
 onFlowStart:
   - takeScreenshot: TC-IOS-002_start
 onFlowComplete:
   - takeScreenshot: TC-IOS-002_complete
 ---
-# TC-IOS-002: Products list is shown after login
-# Precondition: App is installed.
-# Expected: Product count > 0. At least one product title is visible.
-
 - launchApp:
     clearState: true
 
-- waitForAnimationToEnd
-
 - runFlow:
-    file: ./subflows/navigate_to_login.yaml
+    file: ./subflows/login/login.yaml
     env:
       APP_ID: com.saucelabs.mydemo.app.ios
-
-- runFlow:
-    file: ./subflows/perform_login.yaml
-    env:
-      APP_ID: com.saucelabs.mydemo.app.ios
-      EMAIL: ${IOS_EMAIL}
+      IOS_EMAIL: ${IOS_EMAIL}
       PASSWORD: ${PASSWORD}
 
-# Assert: Products catalog is loaded with at least one item
-- extendedWaitUntil:
-    visible:
-      text: "Sauce Labs Backpack"
-    timeout: 20000
+- runFlow:
+    file: ./subflows/products/assert_loaded.yaml
+    env:
+      APP_ID: com.saucelabs.mydemo.app.ios
 
 - assertVisible:
     text: "Sauce Labs Bike Light"

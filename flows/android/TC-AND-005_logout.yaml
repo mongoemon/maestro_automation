@@ -5,71 +5,37 @@ tags:
   - auth
   - smoke
 env:
-  EMAIL: ${ANDROID_EMAIL}
+  ANDROID_EMAIL: ${ANDROID_EMAIL}
   PASSWORD: ${PASSWORD}
 onFlowStart:
   - takeScreenshot: TC-AND-005_start
 onFlowComplete:
   - takeScreenshot: TC-AND-005_complete
 ---
-# TC-AND-005: Logout navigates back to the Login screen
-# Precondition: App is installed. User starts fresh.
-# Expected: After logout, the Login screen is displayed.
-
 - launchApp:
     clearState: true
 
-- waitForAnimationToEnd
-
-# Log in with valid credentials
 - runFlow:
-    file: ../subflows/navigate_to_login.yaml
+    file: ../subflows/login/login.yaml
     env:
       APP_ID: com.saucelabs.mydemoapp.android
-
-- runFlow:
-    file: ../subflows/perform_login.yaml
-    env:
-      APP_ID: com.saucelabs.mydemoapp.android
-      EMAIL: ${ANDROID_EMAIL}
+      ANDROID_EMAIL: ${ANDROID_EMAIL}
       PASSWORD: ${PASSWORD}
 
-# Assert: Products screen is displayed after login
-- extendedWaitUntil:
-    visible:
-      text: "Products"
-    timeout: 10000
+- runFlow:
+    file: ../subflows/products/assert_loaded.yaml
+    env:
+      APP_ID: com.saucelabs.mydemoapp.android
 
 - takeScreenshot: TC-AND-005_after_login
 
-# Open hamburger menu
-- tapOn:
-    point: "7%, 8%"
-
-- waitForAnimationToEnd
-
-# Tap "Log Out" in the navigation drawer
-- tapOn: "Log Out"
-
-- waitForAnimationToEnd
-
-- takeScreenshot: TC-AND-005_logout_dialog
-
-# Confirm logout in the dialog
-- tapOn: "LOGOUT"
-
-- waitForAnimationToEnd
+- runFlow:
+    file: ../subflows/drawer/logout.yaml
+    env:
+      APP_ID: com.saucelabs.mydemoapp.android
 
 - takeScreenshot: TC-AND-005_after_logout
 
-# Dismiss compatibility dialog that reappears on the Login screen after logout
-- tapOn:
-    text: "OK"
-    optional: true
-
-- waitForAnimationToEnd
-
-# Assert: Login screen is displayed (app navigates directly to Login after logout)
 - extendedWaitUntil:
     visible:
       text: "Username"

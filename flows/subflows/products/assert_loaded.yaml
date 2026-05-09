@@ -1,0 +1,6 @@
+appId: ${APP_ID}
+---
+- extendedWaitUntil:
+    visible:
+      text: "Sauce Labs Backpack"
+    timeout: 20000

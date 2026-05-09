@@ -5,36 +5,24 @@ tags:
   - auth
   - smoke
 env:
-  EMAIL: ${IOS_EMAIL}
+  IOS_EMAIL: ${IOS_EMAIL}
   PASSWORD: ${PASSWORD}
 onFlowStart:
   - takeScreenshot: TC-IOS-001_start
 onFlowComplete:
   - takeScreenshot: TC-IOS-001_complete
 ---
-# TC-IOS-001: Login with valid credentials
-# Precondition: App is installed. User is on the home screen.
-# Expected: Products catalog screen is displayed after login.
-
 - launchApp:
     clearState: true
 
-- waitForAnimationToEnd
-
 - runFlow:
-    file: ./subflows/navigate_to_login.yaml
+    file: ./subflows/login/login.yaml
     env:
       APP_ID: com.saucelabs.mydemo.app.ios
-
-- runFlow:
-    file: ./subflows/perform_login.yaml
-    env:
-      APP_ID: com.saucelabs.mydemo.app.ios
-      EMAIL: ${IOS_EMAIL}
+      IOS_EMAIL: ${IOS_EMAIL}
       PASSWORD: ${PASSWORD}
 
-# Assert: Products catalog screen is displayed
-- extendedWaitUntil:
-    visible:
-      text: "Sauce Labs Backpack"
-    timeout: 20000
+- runFlow:
+    file: ./subflows/products/assert_loaded.yaml
+    env:
+      APP_ID: com.saucelabs.mydemo.app.ios

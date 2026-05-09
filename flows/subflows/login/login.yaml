@@ -1,0 +1,20 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    file: ./navigate.yaml
+    env:
+      APP_ID: ${APP_ID}
+
+# Credential shortcut auto-fills both username and password on Android
+- tapOn: ${ANDROID_EMAIL}
+
+- tapOn: "Login"
+
+- waitForAnimationToEnd
+
+# Dismiss Android App Compatibility dialog that may appear after login
+- tapOn:
+    text: "OK"
+    optional: true
+
+- waitForAnimationToEnd

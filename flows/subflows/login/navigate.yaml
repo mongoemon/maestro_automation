@@ -1,0 +1,23 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    file: ../common_actions.yaml
+    env:
+      APP_ID: ${APP_ID}
+
+# Open the hamburger drawer (top-left icon)
+- tapOn:
+    point: "7%, 8%"
+
+- waitForAnimationToEnd
+
+- tapOn: "Log In"
+
+- waitForAnimationToEnd
+
+# Dismiss Android App Compatibility dialog that may appear on the login screen
+- tapOn:
+    text: "OK"
+    optional: true
+
+- waitForAnimationToEnd

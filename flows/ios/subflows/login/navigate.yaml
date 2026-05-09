@@ -1,0 +1,16 @@
+appId: ${APP_ID}
+---
+- runFlow:
+    file: ../../../subflows/common_actions.yaml
+    env:
+      APP_ID: ${APP_ID}
+
+- tapOn:
+    id: "More-tab-item"
+
+- waitForAnimationToEnd
+
+- tapOn:
+    id: "Login Button"
+
+- waitForAnimationToEnd
