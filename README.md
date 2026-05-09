@@ -109,6 +109,8 @@ maestro --version
 
 ## 4. Project Structure
 
+> For a deeper explanation of every file and how the pieces fit together, see [docs/project-structure.md](docs/project-structure.md).
+
 ```
 maestro_automation/
 │
