@@ -2,6 +2,12 @@
 
 Step-by-step guide for beginners to set up and run mobile UI tests using [Maestro](https://maestro.mobile.dev/).
 
+**Additional docs:**
+- [Maestro Reference](docs/maestro-reference.md) — CLI commands, YAML command reference, troubleshooting
+- [Project Structure](docs/project-structure.md) — directory layout, subflow architecture, env vars
+- [Writing Flows](docs/writing-flows.md) — patterns and best practices for authoring flows
+- [Android Setup](docs/android-setup.md) · [iOS Setup](docs/ios-setup.md)
+
 ---
 
 ## Table of Contents
