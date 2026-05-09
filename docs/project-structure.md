@@ -62,7 +62,9 @@ maestro_automation/
 │   ├── project-structure.md        ← This file
 │   ├── android-setup.md            ← Android emulator / device setup
 │   ├── ios-setup.md                ← iOS simulator / device setup
+│   ├── beginner-guide.md           ← Basic → structured test script walkthrough
 │   ├── writing-flows.md            ← Guide for writing new flows
+│   ├── maestro-reference.md        ← CLI and YAML command reference + troubleshooting
 │   └── test-cases.xlsx             ← Test case specification spreadsheet
 │
 ├── reports/                        ← JUnit XML output (gitignored)
