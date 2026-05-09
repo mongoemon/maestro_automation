@@ -3,6 +3,9 @@
 Complete guide for setting up Android testing with Maestro.  
 Steps are shown for both **Windows** and **macOS** where they differ.
 
+> **macOS users:** All `macOS` sections below must be run in the default **Terminal app (zsh)**.  
+> Do NOT run them in PowerShell — `export` and `$HOME` are bash/zsh syntax and will fail with a parser error in PowerShell.
+
 ---
 
 ## 1. Install Java
