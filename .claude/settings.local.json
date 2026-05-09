@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(maestro --version 2>&1)"
+      "PowerShell(maestro --version 2>&1)",
+      "Bash(maestro test *)"
     ]
   }
 }
